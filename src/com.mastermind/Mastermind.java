@@ -1,5 +1,8 @@
 package com.mastermind;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import static com.mastermind.RandomGeneratorAPI.getRandomNumberCombination;
@@ -8,6 +11,7 @@ public class Mastermind {
 
     public static void main(String[] args) {
         String[] randomNumberCombination = getRandomNumberCombination();
+        //String[] randomNumberCombination = new String[]{"1", "1", "1", "2"};
 
         int[] computerSelectedNums = new int[randomNumberCombination.length];
         for (int i = 0; i < randomNumberCombination.length; i++) {
@@ -37,17 +41,25 @@ public class Mastermind {
 
             if (allDigitsMatch(userEnteredNum, computerSelectedNums)) {
                 System.out.println("Superb!. All numbers are correct.");
+                System.out.println("Computer Number generated was : " + Arrays.stream(randomNumberCombination).toList());
                 System.exit(1);
             }
 
             int correctDigits = 0;
             int correctLocationCounter = countCorrectLocations(computerSelectedNums, userEnteredNum);
 
-            for (int eachComputerDigit : computerSelectedNums) {
-                for (int eachUserDigit : userEnteredNum) {
-                    if (eachUserDigit == eachComputerDigit) {
-                        correctDigits++;
-                        break;
+            Map<Integer, String> userDigitDetectedMap = initializeToN(userEnteredNum);
+
+            for (int computerIdx = 0; computerIdx < computerSelectedNums.length; computerIdx++) {
+                for (int userIdx = 0; userIdx < userEnteredNum.length; userIdx++) {
+                    if (computerSelectedNums[computerIdx] == userEnteredNum[userIdx]) {
+                        if (userDigitAlreadyDetected(userIdx, userDigitDetectedMap)) {
+                            continue;
+                        } else {
+                            correctDigits++;
+                            updatedUserDigitMap(userIdx, userDigitDetectedMap);
+                            break;
+                        }
                     }
                 }
             }
@@ -60,7 +72,29 @@ public class Mastermind {
 
         }
 
+        System.out.println("Computer Number generated was : " + Arrays.stream(randomNumberCombination).toList());
     }
+
+    private static Map<Integer, String> initializeToN(int[] userEnteredNum) {
+        Map<Integer, String> map = new HashMap<>();
+        for (int index = 0; index < userEnteredNum.length; index++) {
+            map.put(index, "N");
+        }
+        return map;
+    }
+
+    private static void updatedUserDigitMap(int userIdx, Map<Integer, String> userDigitDetectedMap) {
+        userDigitDetectedMap.put(userIdx, "Y");
+    }
+
+    private static boolean userDigitAlreadyDetected(int userIdx, Map<Integer, String> userDigitDetectedMap) {
+        if (userDigitDetectedMap.isEmpty())
+            return false;
+
+        String detected = userDigitDetectedMap.get(userIdx);
+        return detected.equals("Y");
+    }
+
 
     private static int countCorrectLocations(int[] computerSelectedNums, int[] userEnteredNum) {
         int correctLocations = 0;
